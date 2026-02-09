@@ -50,4 +50,4 @@ The game is designed to be "plug-and-play."
 
 ---
 
-**Developed with ❤️ by [Your Name/Handle]**
+**Developed with ❤️ by Manaswi Goyal**
