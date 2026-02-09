@@ -134,7 +134,7 @@ class BullsAndCowsPro:
 
         # --- Instructions (Dynamic Font Scaling) ---
         instr = ("HOW TO PLAY:\n• Click icons at bottom to guess the correct code.\n"
-                 "• Green Dot = Correct icon & spot.\n• Red Dot = Correct icon, wrong spot.\n"
+                 "• Green Dot = Correct icon & spot.\n• Red Dot = Correct icon, wrong spot.\n• Blank Dot = Icon is not part of code.\n"
                  "• NOTE: Dot order ≠ Icon order.")
         
         # Calculated Font Size: Base 16 at design resolution
