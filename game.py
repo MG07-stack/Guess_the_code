@@ -10,7 +10,7 @@ TOTAL_POOL = 10
 ACTIVE_ICONS = 4
 BASE_SLOT_SIZE = 60
 BASE_GAP = 20
-ROWS = 6
+ROWS = 5
 BACKGROUND_PATH = "background.png" 
 LOGO_PATH = "logo.png" 
 GLOW_RADIUS = 8 
@@ -21,9 +21,11 @@ class BullsAndCowsPro:
         self.root.title("Guessing The Code")
         self.root.geometry("950x750")
         
+        # 1. Initialize variables HERE first
         self.secret_code = []
         self.history = []  
         self.current_guess = []
+        self.selected_indices = [] # <--- Add this line here
         self.row_count = 0
         self.is_animating = False 
         
@@ -36,9 +38,11 @@ class BullsAndCowsPro:
         self.canvas.pack(fill="both", expand=True)
         
         self.load_resources()
-        self.root.after(200, self.init_game)
         
-        # This triggers draw_ui whenever the window changes size
+        # 2. Setup the game state BEFORE binding events
+        self.init_game() 
+        
+        # 3. Now bind the resize event
         self.root.bind("<Configure>", self.on_window_resize)
         self.root.bind("<BackSpace>", lambda e: self.undo_guess())
 
@@ -81,11 +85,30 @@ class BullsAndCowsPro:
         pool_indices = list(range(TOTAL_POOL))
         random.shuffle(pool_indices)
         self.selected_indices = pool_indices[:ACTIVE_ICONS]
-        self.secret_code = random.sample(range(ACTIVE_ICONS), 4)
+        
+        # --- NEW CODE GENERATION LOGIC ---
+        # 50% chance to have one repetition
+        if random.random() < 0.5:
+            # Pick 3 unique icons from our active pool
+            # (One will be used twice, the other two once = 4 total slots)
+            chosen_icons = random.sample(range(ACTIVE_ICONS), 3)
+            # Repeat the first icon in the chosen list
+            self.secret_code = [chosen_icons[0], chosen_icons[0], chosen_icons[1], chosen_icons[2]]
+            # Shuffle so the pair isn't always at the start
+            random.shuffle(self.secret_code)
+        else:
+            # Standard unique code (1234 style)
+            self.secret_code = random.sample(range(ACTIVE_ICONS), 4)
+        # ---------------------------------
+
         self.history, self.current_guess, self.row_count, self.is_animating = [], [], 0, False
         self.draw_ui()
 
     def draw_ui(self):
+        # Safety check: if game isn't initialized yet, don't draw
+        if not self.selected_indices:
+            return
+
         w, h, slot, gap, scale = self.get_scales()
         if w < 100: return
         self.canvas.delete("all")
@@ -167,7 +190,8 @@ class BullsAndCowsPro:
         for item in (r, t): self.canvas.tag_bind(item, "<Button-1>", lambda e: cmd())
 
     def handle_press(self, index):
-        if self.is_animating or len(self.current_guess) >= 4 or index in self.current_guess: return
+        # Remove "index in self.current_guess" to allow picking the same icon twice
+        if self.is_animating or len(self.current_guess) >= 4: return
         w, h, slot, gap, scale = self.get_scales()
         tx, ty = self.start_x+(len(self.current_guess)*(slot+gap))+(5*scale), self.start_y+(self.row_count*(slot+gap))+(5*scale)
         sx, sy = self.start_x+(index*(slot+gap))+(5*scale), h-(100*scale)+(5*scale)
